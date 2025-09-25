@@ -1,19 +1,10 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-echo=echo
-for cmd in echo /bin/echo; do
-	$cmd >/dev/null 2>&1 || continue
-	if ! $cmd -e "" | grep -qE '^-e'; then
-		echo=$cmd
-		break
-	fi
-done
-
 cli=$($echo -e "\033[")
 norm="${cli}0m"
 bold="${cli}1;37m"
-red="${cli}1;31m"
+# red="${cli}1;31m"
 yellow="${cli}1;33m"
 green="${cli}1;32m"
 
@@ -30,8 +21,8 @@ echo -e "\n${bold}Docker Stunnel${norm} ($LISTEN_HOST:$LISTEN_PORT => $CONNECT_H
 
 # Timezone
 echo "  ${norm}[${green}+${norm}] Setting timezone to ${green}${TZ}${norm}"
-ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime
-echo ${TZ} > /etc/timezone
+ln -snf "/usr/share/zoneinfo/${TZ}" /etc/localtime
+echo "${TZ}" > /etc/timezone
 
 # Check certificate & key
 if [ -f /etc/stunnel/stunnel.pem ] && [ -s /etc/stunnel/stunnel.pem ]; then
@@ -78,8 +69,8 @@ fi
 
 # Fix permissions
 echo -e "  ${norm}[${green}+${norm}] Fixing permissions..${norm}\n"
-chown ${PUID}:${PGID} /proc/self/fd/1 /proc/self/fd/2
-chown -R ${PUID}:${PGID} /etc/stunnel /var/log/stunnel.log
+chown "${PUID}:${PGID}" /proc/self/fd/1 /proc/self/fd/2
+chown -R "${PUID}:${PGID}" /etc/stunnel /var/log/stunnel.log
 
 if [ -n "${PGID}" ] && [ -n "${PUID}" ]; then
   sed -i -e "s/^stunnel:\([^:]*\):[0-9]*/stunnel:\1:${PGID}/" /etc/group
