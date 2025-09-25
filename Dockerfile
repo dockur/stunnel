@@ -19,6 +19,7 @@ RUN ln -sf /dev/stdout /var/log/stunnel.log
 ENV TZ="UTC"
 ENV PUID="1000"
 ENV PGID="1000"
+ENV CLIENT: "no"
 ENV LISTEN_PORT: "853"
 ENV CONNECT_PORT: "53"
 ENV CONNECT_HOST: "10.0.0.1"
