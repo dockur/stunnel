@@ -1,0 +1,14 @@
+services:
+  stunnel:
+    hostname: stunnel
+    image: dockurr/stunnel
+    container_name: stunnel
+    environment:
+      LISTEN_PORT: "853"
+      CONNECT_PORT: "53"
+      CONNECT_HOST: "pihole"
+    volumes:
+      - ./stunnel:/etc/stunnel
+    ports:
+      - "853:853/tcp"
+    restart: always
