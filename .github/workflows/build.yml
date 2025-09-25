@@ -1,165 +1,130 @@
-name: build
+name: Build
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
 
 concurrency:
-  group: build-${{ github.ref }}
-  cancel-in-progress: true
-
-on:
-  schedule:
-    - cron: '0 6 */7 * *'
-  push:
-    branches:
-      - dev
-    tags:
-      - 'v*'
-    paths-ignore:
-      - '**.md'
-
-env:
-  DOCKERHUB_SLUG: k44sh/stunnel
-  GHCR_SLUG: ghcr.io/k44sh/stunnel
+  group: build
+  cancel-in-progress: false
 
 jobs:
+  shellcheck:
+    name: Test
+    uses: ./.github/workflows/check.yml
   build:
+    name: Build
+    needs: shellcheck
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      packages: write
+      contents: read
     steps:
       -
-        name: Checkout
-        id: checkout
-        uses: actions/checkout@v3
-      -
-        name: Variables
-        id: vars
+        name: Get remote package data
         run: |
-          echo "container_name=stunnel" >> $GITHUB_OUTPUT
-          echo "timeout=120" >> $GITHUB_OUTPUT
+          #!/bin/bash
+          package="edge/community/aarch64/stunnel"
+          resp=$(curl -sS "https://pkgs.alpinelinux.org/package/$package")
+          latest_tag=$(echo "$resp" | grep -A 3 -i \>version\< | sed -e 's/<[^>]*>//g' | sed -E 's#.*>([0-9\.]+)-r[0-9]+</a>#\1#g' | tail -1 | sed 's/^[ \t]*//;s/[ \t]*$//')
+          [ -z "$latest_tag" ] && echo "Tag not found!" && exit 1
+          [[ "$latest_tag" = v* ]] && latest_tag="${latest_tag:1}"
+          echo "Found tag: \"${latest_tag}\"" 
+          latest_version="${latest_tag%-*}"
+          major="${latest_version%%.*}"
+          minor="${latest_version#*.}"
+          minor="${minor%%.*}"
+          echo "latest_tag=$latest_tag" >> $GITHUB_ENV
+          echo "latest_version=$latest_version" >> $GITHUB_ENV
+          echo "latest_minor=$major.$minor" >> $GITHUB_ENV
+      - 
+        name: Check if the tag exists locally
+        uses: action-pack/tag-exists@v1
+        id: checkTag
+        with: 
+          tag: 'v${{ env.latest_tag }}'         
       -
-        name: Cache Docker
-        id: cache
-        uses: actions/cache@v3
+        name: Finish when found
+        run: |
+          #!/bin/bash
+          val="${{ steps.checkTag.outputs.exists }}"
+          echo "exists=${val}" >> $GITHUB_ENV
+      -
+        name: Checkout
+        if: env.exists == 'false'
+        uses: actions/checkout@v5
         with:
-          path: /tmp/.docker-cache
-          key: ${{ runner.os }}-docker-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-docker-
+          fetch-depth: 0
       -
-        name: Docker meta
+        name: Docker metadata
         id: meta
-        uses: docker/metadata-action@v4
+        if: env.exists == 'false'
+        uses: docker/metadata-action@v5
         with:
+          context: git
           images: |
-            ${{ env.DOCKERHUB_SLUG }}
-            ${{ env.GHCR_SLUG }}
+            ${{ secrets.DOCKERHUB_REPO }}
+            ghcr.io/${{ github.repository }}
           tags: |
-            type=raw,value=dev,enable=${{ github.ref == 'refs/heads/dev' }}
-            type=raw,value=edge,enable=${{ github.event_name == 'schedule' }}
-            type=match,pattern=v(.*),group=1
+            type=raw,value=latest,priority=100
+            type=raw,value=${{ env.latest_minor }}
+            type=raw,value=${{ env.latest_version }},priority=250
           labels: |
-            org.opencontainers.image.title=Stunnel Docker
-            org.opencontainers.image.url=https://github.com/k44sh/stunnel
-            org.opencontainers.image.source=https://github.com/k44sh/stunnel
-            org.opencontainers.image.documentation=https://github.com/k44sh/stunnel
-            org.opencontainers.image.description=Stunnel Docker image based on Alpine Linux
-            org.opencontainers.image.licenses=MIT
-            org.opencontainers.image.vendor=k44sh
-      -
-        name: Set up QEMU
-        id: set-qemu
-        uses: docker/setup-qemu-action@v2
-      -
+            org.opencontainers.image.title=${{ vars.NAME }}
+        env:
+          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
+      - 
         name: Set up Docker Buildx
-        id: set-buildx
-        uses: docker/setup-buildx-action@v2
+        if: env.exists == 'false'
+        uses: docker/setup-buildx-action@v3
       -
-        name: Login to DockerHub
-        id: login-dh
-        if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/dev' || github.event_name == 'schedule' }}
-        uses: docker/login-action@v2
+        name: Login into Docker Hub
+        if: env.exists == 'false'
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
-        name: Login to GHCR
-        id: login-ghcr
-        if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/dev' || github.event_name == 'schedule' }}
-        uses: docker/login-action@v2
+        name: Login to GitHub Container Registry
+        if: env.exists == 'false'
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }}
+          username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       -
-        name: Build Prod
-        id: build-prod
-        if: ${{ startsWith(github.ref, 'refs/tags/v') || github.event_name == 'schedule' }}
-        uses: docker/bake-action@v2
+        name: Build Docker image
+        if: env.exists == 'false'
+        uses: docker/build-push-action@v6
         with:
-          files: |
-            ./docker-bake.hcl
-            ${{ steps.meta.outputs.bake-file }}
-          targets: image-prod
+          context: .
           push: true
-          set: |
-            *.cache-from=type=gha
-            *.cache-to=type=gha,mode=max
+          provenance: false
+          platforms: linux/amd64,linux/arm64,linux/arm
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.annotations }}
+          build-args: |
+            VERSION_ARG=${{ env.latest_version }}
       -
-        name: Build Dev
-        id: build-dev
-        if: ${{ github.ref == 'refs/heads/dev' }}
-        uses: docker/bake-action@v2
+        name: Create a release
+        if: env.exists == 'false'
+        uses: action-pack/github-release@v2
         with:
-          files: |
-            ./docker-bake.hcl
-            ${{ steps.meta.outputs.bake-file }}
-          targets: image-dev
-          push: true
-          set: |
-            *.cache-from=type=gha
-            *.cache-to=type=gha,mode=max
+          tag: "v${{ env.latest_tag }}"
+          title: "v${{ env.latest_version }}"
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
       -
-        name: Run Test
-        id: test
-        if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/dev' || github.event_name == 'schedule' }}
-        run: |
-              docker run --rm -d --name ${{ steps.vars.outputs.container_name }} ${{ env.DOCKERHUB_SLUG }}:${{ steps.meta.outputs.version }}
-              for i in $(seq ${{ steps.vars.outputs.timeout }}); do
-                status=$(docker inspect -f '{{ .State.Health.Status }}' ${{ steps.vars.outputs.container_name }} 2>/dev/null)
-                if [[ $? -eq 0 ]]; then
-                  if [[ "${status}" == "healthy" ]]; then
-                    docker logs ${{ steps.vars.outputs.container_name }}
-                    echo -e "\n✅ The container is \e[1;32mhealthy\e[0m after \e[1;5m${i}\e[0m seconds\n"
-                    docker stop ${{ steps.vars.outputs.container_name }} >/dev/null 2>&1
-                    exit 0
-                  elif [[ "${status}" == "unhealthy" ]]; then
-                    echo -e "❌ The container is \e[1;33munhealthy\e[0m"
-                    docker stop ${{ steps.vars.outputs.container_name }} >/dev/null 2>&1
-                    exit 1
-                  elif [[ "${status}" == "starting" ]]; then
-                    echo "... starting"
-                  else
-                    echo -e "❓ The container is in \e[1;31munknown\e[0m state ($status)"
-                    docker stop ${{ steps.vars.outputs.container_name }} >/dev/null 2>&1
-                    exit 1
-                  fi
-                else
-                  echo -e "❌ \e[1;31mDocker error\e[0m"
-                  docker logs ${{ steps.vars.outputs.container_name }}
-                  exit 1
-                fi
-                sleep 1
-              done
-      -
-        name: Check Manifest
-        id: manifest
-        if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/dev' || github.event_name == 'schedule' }}
-        run: |
-          docker buildx imagetools inspect ${{ env.DOCKERHUB_SLUG }}:${{ steps.meta.outputs.version }}
-          docker buildx imagetools inspect ${{ env.GHCR_SLUG }}:${{ steps.meta.outputs.version }}
-      -
-        name: Inspect Image
-        id: inspect
-        if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/dev' || github.event_name == 'schedule' }}
-        run: |
-          docker pull ${{ env.DOCKERHUB_SLUG }}:${{ steps.meta.outputs.version }}
-          docker image inspect ${{ env.DOCKERHUB_SLUG }}:${{ steps.meta.outputs.version }}
-          docker pull ${{ env.GHCR_SLUG }}:${{ steps.meta.outputs.version }}
-          docker image inspect ${{ env.GHCR_SLUG }}:${{ steps.meta.outputs.version }}
+        name: Send mail
+        if: env.exists == 'false'
+        uses: action-pack/send-mail@v1
+        with:
+          to: ${{secrets.MAILTO}}
+          from: Github Actions <${{secrets.MAILTO}}>
+          connection_url: ${{secrets.MAIL_CONNECTION}}
+          subject: Build of ${{ github.event.repository.name }} v${{ env.latest_tag }} completed
+          body: |
+              The build job of ${{ github.event.repository.name }} v${{ env.latest_tag }} was completed successfully! 
+              
+              See https://github.com/${{ github.repository }}/actions for more information.
