@@ -36,14 +36,24 @@ echo "  ${norm}[${green}+${norm}] Setting timezone to ${green}${TZ}${norm}"
 ln -snf "/usr/share/zoneinfo/${TZ}" /etc/localtime
 echo "${TZ}" > /etc/timezone
 
+cert="/stunnel.pem"
+
+if [ -d "$cert" ]; then
+
+    echo "The bind $cert maps to a file that does not exist!"
+    exit 1
+
+fi
+
 # Check certificate & key
-if [ -f /etc/stunnel/stunnel.pem ] && [ -s /etc/stunnel/stunnel.pem ]; then
+if [ -f "$cert" ] && [ -s "$cert" ]; then
+  cp "$cert" /etc/stunnel/stunnel.pem
   chmod 640 /etc/stunnel/stunnel.pem
   rm -f  /etc/stunnel/stunnel.crt
   rm -f  /etc/stunnel/stunnel.key
-  echo -e "  ${norm}[${yellow}+${norm}] Converting certificate format..."
   openssl pkey -in  /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.key
   openssl x509 -outform PEM -in  /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.crt
+  rm /etc/stunnel/stunnel.pem
 fi
 
 if [ ! -f /etc/stunnel/stunnel.crt ] || [ ! -f /etc/stunnel/stunnel.key ]; then
@@ -54,12 +64,28 @@ if [ ! -f /etc/stunnel/stunnel.crt ] || [ ! -f /etc/stunnel/stunnel.key ]; then
     -key /etc/stunnel/stunnel.key -out /etc/stunnel/stunnel.crt
 fi
 
+chmod 640 /etc/stunnel/stunnel.crt
 chmod 640 /etc/stunnel/stunnel.key
 
 # Check configuration
-if [ ! -f /etc/stunnel/stunnel.conf ]; then
-	echo "  ${norm}[${green}+${norm}] Setting up stunnel configuration.."
-	cat > /etc/stunnel/stunnel.conf << EOF
+
+config="/stunnel.conf"
+
+if [ -d "$config" ]; then
+
+    echo "The bind $config maps to a file that does not exist!"
+    exit 1
+
+fi
+
+if [ -f "$config" ] && [ -s "$config" ]; then
+  cp "$config" /etc/stunnel/stunnel.conf
+else
+  config="/etc/stunnel/stunnel.conf"
+  rm -f "$config"
+
+  echo "  ${norm}[${green}+${norm}] Setting up stunnel configuration.."
+  cat > "$config" << EOF
 foreground = yes
 output = /var/log/stunnel.log
 
@@ -72,8 +98,9 @@ delay = no
 renegotiation = no
 sslVersionMin = TLSv1.2
 sslVersionMax = TLSv1.3
-cert=/etc/stunnel/stunnel.crt
+
 key=/etc/stunnel/stunnel.key
+cert=/etc/stunnel/stunnel.crt
 
 socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
@@ -92,7 +119,7 @@ chown -R "${PUID}:${PGID}" /etc/stunnel /var/log/stunnel.log
 if [ -n "${PGID}" ] && [ -n "${PUID}" ]; then
   sed -i -e "s/^stunnel:\([^:]*\):[0-9]*/stunnel:\1:${PGID}/" /etc/group
   sed -i -e "s/^stunnel:\([^:]*\):\([0-9]*\):[0-9]*/stunnel:\1:\2:${PGID}/" /etc/passwd
-  sed -i -e "s/^stunnel:\([^:]*\):[0-9]*:\([0-9]*\)/stunnel:\1:${PUID}:\2/" /etc/p asswd
+  sed -i -e "s/^stunnel:\([^:]*\):[0-9]*:\([0-9]*\)/stunnel:\1:${PUID}:\2/" /etc/passwd
 fi
 
 # Healthcheck

@@ -1,73 +1,96 @@
-<p align="center"><a href="https://github.com/k44sh/stunnel" target="_blank"><img src="https://raw.githubusercontent.com/k44sh/stunnel/main/.screens/stunnel.png"></a></p>
+<div align="center">
+<a href="https://github.com/dockur/stunnel"><img src="https://raw.githubusercontent.com/dockur/stunnel/master/.github/logo.png" title="Logo" style="max-width:100%;" width="128" /></a>
+</div>
+<div align="center">
 
-<p align="center">
-  <a href="https://hub.docker.com/r/k44sh/stunnel/tags?page=1&ordering=last_updated"><img src="https://img.shields.io:/docker/v/k44sh/stunnel/latest?logo=docker" alt="Latest Version"></a>
-  <a href="https://hub.docker.com/r/k44sh/stunnel/"><img src="https://img.shields.io:/docker/image-size/k44sh/stunnel?logo=docker" alt="Docker Size"></a>
-  <a href="https://hub.docker.com/r/k44sh/stunnel/"><img src="https://img.shields.io:/docker/pulls/k44sh/stunnel?logo=docker" alt="Docker Pulls"></a>
-  <a href="https://github.com/k44sh/stunnel/actions?workflow=build"><img src="https://img.shields.io/github/actions/workflow/status/k44sh/stunnel/build.yml" alt="Build Status"></a>
-</p>
+[![Build]][build_url]
+[![Version]][tag_url]
+[![Size]][tag_url]
+[![Package]][pkg_url]
+[![Pulls]][hub_url]
 
-## About
+</div></h1>
 
-[Stunnel](https://stunnel.org/) Docker image based on [Alpine Linux](https://www.alpinelinux.org/).<br/>
-___
+Docker container of [stunnel](https://www.stunnel.org/), a proxy designed to add TLS encryption functionality to existing clients and servers without any changes in the programs' code.
 
-## Features
+## Usage  🐳
 
-* Run as non-root user
-* Multi-platform image
+##### Via Docker Compose:
 
-## Supported platforms
-
-* linux/amd64
-* linux/arm64
-* linux/arm/v7
-
-## Usage
-
-This docker can be used with an existing `stunnel` configuration using a volume (`/etc/stunnel`).
-
-Otherwise you can just adapt the environment variables to run a simple configuration.
-
-### Docker Compose
-
-Docker compose is the recommended way to run this image. Edit the compose file with your preferences and run the following command:
-
-```shell
-git clone https://github.com/k44sh/stunnel.git && cd stunnel
-mkdir stunnel
-docker compose up -d
-docker compose logs -f
+```yaml
+services:
+  stunnel:
+    hostname: stunnel
+    image: dockurr/stunnel
+    container_name: stunnel
+    environment:
+      LISTEN_PORT: "853"
+      CONNECT_PORT: "53"
+      CONNECT_HOST: "10.0.0.1"
+    volumes:
+      - ./certificate.pem:/stunnel.pem
+    ports:
+      - 853:853
+    restart: always
 ```
 
-### Command line
+##### Via Docker CLI:
 
-You can also use the following minimal command:
-
-```shell
-docker run --rm -d --name stunnel -p 389:389 \
--e CONNECT_HOST=ldap.google.com -e CONNECT_PORT=636 \
--v $(pwd)/stunnel.crt:/etc/stunnel/stunnel.crt \
--v $(pwd)/stunnel.key:/etc/stunnel/stunnel.key \
-k44sh/stunnel:latest
+```bash
+docker run -it --rm --name stunnel -p 853:853 -e "LISTEN_PORT=853" -e "CONNECT_PORT=53" -e "CONNECT_HOST=10.0.0.1" -v "${PWD:-.}/certificate.pem:/stunnel.pem" dockurr/stunnel
 ```
 
-### Environment variables
+## Configuration ⚙️
 
-* `TZ`: The timezone assigned to the container (default `UTC`)
-* `PUID`: User id (default `1000`)
-* `PGID`: User group id (default `1000`)
-* `LISTEN_HOST`: Listening server address (default `0.0.0.0`)
-* `LISTEN_PORT`: Listening server port (default `389`)
-* `CONNECT_HOST`: Remote server address (default `ldap.google.com`)
-* `CONNECT_PORT`: Remote server port (default `636`)
-* `HEALTHCHECK`: Host for healthcheck (default `127.0.0.1`)
+### How do I select the certificate?
 
-### Upgrade
+By default, a self-signed certificate will be generated, but you can supply your own certificate by adding:
 
-To upgrade, pull the newer image and launch the container:
-
-```shell
-docker compose pull
-docker compose up -d
+```yaml
+volumes:
+  - ./certificate.pem:/stunnel.pem
 ```
+
+Replace the example filename `./certificate.pem` with the real filename of the certificate.
+
+### How do I tunnel to a TLS port?
+
+By default, it is assumed that the destination port will not have TLS/SSL, but when it does you can set the `CLIENT` variable like this:
+
+```yaml
+environment:
+  CLIENT: "yes"
+```
+
+### How do I modify the permissions?
+
+You can set `UID` and `GID` environment variables to change the user and group ID.
+
+```yaml
+environment:
+  UID: "1002"
+  GID: "1005"
+```
+
+### How do I modify other settings?
+
+If you need more advanced features, you can completely override the default configuration by binding your custom config to the container like this:
+
+```yaml
+volumes:
+  - ./custom.conf:/stunnel.conf
+```
+
+## Stars 🌟
+[![Stars](https://starchart.cc/dockur/stunnel.svg?variant=adaptive)](https://starchart.cc/dockur/stunnel)
+
+[build_url]: https://github.com/dockur/stunnel
+[hub_url]: https://hub.docker.com/r/dockurr/stunnel
+[tag_url]: https://hub.docker.com/r/dockurr/stunnel/tags
+[pkg_url]: https://github.com/dockur/stunnel/pkgs/container/stunnel
+
+[Build]: https://github.com/dockur/stunnel/actions/workflows/build.yml/badge.svg
+[Size]: https://img.shields.io/docker/image-size/dockurr/stunnel/latest?color=066da5&label=size
+[Pulls]: https://img.shields.io/docker/pulls/dockurr/stunnel.svg?style=flat&label=pulls&logo=docker
+[Version]: https://img.shields.io/docker/v/dockurr/stunnel/latest?arch=amd64&sort=semver&color=066da5
+[Package]: https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fipitio.github.io%2Fbackage%2Fdockur%2Fstunnel%2Fstunnel.json&query=%24.downloads&logo=github&style=flat&color=066da5&label=pulls

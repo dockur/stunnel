@@ -4,12 +4,11 @@ services:
     image: dockurr/stunnel
     container_name: stunnel
     environment:
-      CLIENT: "no"
       LISTEN_PORT: "853"
       CONNECT_PORT: "53"
       CONNECT_HOST: "10.0.0.1"
     volumes:
-      - ./certificate.pem:/etc/stunnel/stunnel.pem
+      - ./certificate.pem:/stunnel.pem
     ports:
-      - "853:853/tcp"
+      - 853:853
     restart: always
