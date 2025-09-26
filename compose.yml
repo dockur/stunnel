@@ -8,7 +8,8 @@ services:
       CONNECT_PORT: "53"
       CONNECT_HOST: "10.0.0.1"
     volumes:
-      - ./certificate.pem:/stunnel.pem
+      - ./privkey.pem:/key.pem
+      - ./certificate.pem:/cert.pem
     ports:
       - 853:853
     restart: always
