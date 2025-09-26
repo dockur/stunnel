@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+# shellcheck disable=SC2209
 echo=echo
 for cmd in echo /bin/echo; do
 	$cmd >/dev/null 2>&1 || continue
