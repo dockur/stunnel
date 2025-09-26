@@ -45,75 +45,47 @@ echo "${TZ}" > /etc/timezone
 cert="/cert.pem"
 
 if [ -d "$cert" ]; then
-
     echo "The bind $cert maps to a file that does not exist!"
     exit 1
-
 fi
 
-if [ -f "$cert" ] && [ -s "$cert" ]; then
-
-  cp "$cert" /etc/stunnel/cert.pem
-  chmod 640 /etc/stunnel/cert.pem
-
-else
+if [ ! -f "$cert" ] || [ ! -s "$cert" ]; then
 
   cert="/cert.crt"
 
   if [ -d "$cert" ]; then
-
     echo "The bind $cert maps to a file that does not exist!"
     exit 1
-
-  fi
-
-  if [ -f "$cert" ] && [ -s "$cert" ]; then
-    cp "$cert" /etc/stunnel/cert.crt
-    chmod 640 /etc/stunnel/cert.crt
   fi
 
 fi
 
-key="/key.pem"
+key="/private.pem"
 
 if [ -d "$key" ]; then
-
     echo "The bind $key maps to a file that does not exist!"
     exit 1
-
 fi
 
-if [ -f "$key" ] && [ -s "$key" ]; then
+if [ ! -f "$key" ] || [ ! -s "$key" ]; then
 
-  cp "$key" /etc/stunnel/key.pem
-  chmod 640 /etc/stunnel/key.pem
-
-else
-
-  key="/key.key"
+  key="/private.key"
 
   if [ -d "$key" ]; then
-
     echo "The bind $key maps to a file that does not exist!"
     exit 1
-
-  fi
-
-  if [ -f "$key" ] && [ -s "$key" ]; then
-    cp "$key" /etc/stunnel/key.key
-    chmod 640 /etc/stunnel/key.key
   fi
 
 fi
 
-if [ ! -f /etc/stunnel/cert.pem ] || [ ! -f /etc/stunnel/key.pem ]; then
-  if [ ! -f /etc/stunnel/cert.crt ] || [ ! -f /etc/stunnel/key.key ]; then
-    echo -e "  ${norm}[${yellow}+${norm}] Generating self-signed certificate..."
-    openssl ecparam -genkey -name prime256v1 -out /etc/stunnel/key.key
-    openssl req -new -x509 -sha512 -nodes -days 3652 \
-      -subj "/C=FR/ST=SSL/L=SSL/O=SSL/CN=SSL" \
-      -key /etc/stunnel/key.key -out /etc/stunnel/cert.crt
-  fi
+if [ ! -f "$cert" ] || [ ! -s "$cert" ] || [ ! -f "$key" ] || [ ! -s "$key" ]; then
+  cert="/etc/stunnel/cert.crt"
+  key="/etc/stunnel/private.key"
+  echo -e "  ${norm}[${yellow}+${norm}] Generating self-signed certificate..."
+  openssl ecparam -genkey -name prime256v1 -out "$key"
+  openssl req -new -x509 -sha512 -nodes -days 3652 \
+    -subj "/C=FR/ST=SSL/L=SSL/O=SSL/CN=SSL" \
+    -key "$key" -out "$cert"
 fi
 
 # Check configuration
@@ -121,10 +93,8 @@ fi
 config="/stunnel.conf"
 
 if [ -d "$config" ]; then
-
     echo "The bind $config maps to a file that does not exist!"
     exit 1
-
 fi
 
 if [ -f "$config" ] && [ -s "$config" ]; then
@@ -148,8 +118,8 @@ renegotiation = no
 sslVersionMin = TLSv1.2
 sslVersionMax = TLSv1.3
 
-key=/etc/stunnel${key}
-cert=/etc/stunnel${cert}
+key=$key
+cert=$cert
 
 socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
