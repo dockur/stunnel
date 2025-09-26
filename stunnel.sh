@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+echo=echo
+for cmd in echo /bin/echo; do
+	$cmd >/dev/null 2>&1 || continue
+	if ! $cmd -e "" | grep -qE '^-e'; then
+		echo=$cmd
+		break
+	fi
+done
+
 cli=$($echo -e "\033[")
 norm="${cli}0m"
 bold="${cli}1;37m"
