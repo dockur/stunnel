@@ -47,25 +47,26 @@ if [ -d "$cert" ]; then
 fi
 
 if [ -f "$cert" ] && [ -s "$cert" ]; then
-  cp "$cert" /etc/stunnel/stunnel.pem
-  chmod 640 /etc/stunnel/stunnel.pem
-  rm -f  /etc/stunnel/stunnel.crt
-  openssl x509 -outform PEM -in  /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.crt
-  rm /etc/stunnel/stunnel.pem
-fi
 
-cert="/cert.crt"
+  cp "$cert" /etc/stunnel/cert.pem
+  chmod 640 /etc/stunnel/cert.pem
 
-if [ -d "$cert" ]; then
+else
+
+  cert="/cert.crt"
+
+  if [ -d "$cert" ]; then
 
     echo "The bind $cert maps to a file that does not exist!"
     exit 1
 
-fi
+  fi
 
-if [ -f "$cert" ] && [ -s "$cert" ]; then
-  cp "$cert" /etc/stunnel/stunnel.crt
-  chmod 640 /etc/stunnel/stunnel.crt
+  if [ -f "$cert" ] && [ -s "$cert" ]; then
+    cp "$cert" /etc/stunnel/cert.crt
+    chmod 640 /etc/stunnel/cert.crt
+  fi
+
 fi
 
 key="/key.pem"
@@ -78,37 +79,37 @@ if [ -d "$key" ]; then
 fi
 
 if [ -f "$key" ] && [ -s "$key" ]; then
-  cp "$key" /etc/stunnel/stunnel.pem
-  chmod 640 /etc/stunnel/stunnel.pem
-  rm -f  /etc/stunnel/stunnel.key
-  openssl pkey -in  /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.key
-  rm /etc/stunnel/stunnel.pem
-fi
 
-key="/key.key"
+  cp "$key" /etc/stunnel/key.pem
+  chmod 640 /etc/stunnel/key.pem
 
-if [ -d "$key" ]; then
+else
+
+  key="/key.key"
+
+  if [ -d "$key" ]; then
 
     echo "The bind $key maps to a file that does not exist!"
     exit 1
 
+  fi
+
+  if [ -f "$key" ] && [ -s "$key" ]; then
+    cp "$key" /etc/stunnel/key.key
+    chmod 640 /etc/stunnel/key.key
+  fi
+
 fi
 
-if [ -f "$key" ] && [ -s "$key" ]; then
-  cp "$key" /etc/stunnel/stunnel.key
-  chmod 640 /etc/stunnel/stunnel.key
+if [ ! -f /etc/stunnel/cert.pem ] || [ ! -f /etc/stunnel/key.pem ]; then
+  if [ ! -f /etc/stunnel/cert.crt ] || [ ! -f /etc/stunnel/key.key ]; then
+    echo -e "  ${norm}[${yellow}+${norm}] Generating self-signed certificate..."
+    openssl ecparam -genkey -name prime256v1 -out /etc/stunnel/key.key
+    openssl req -new -x509 -sha512 -nodes -days 3652 \
+      -subj "/C=FR/ST=SSL/L=SSL/O=SSL/CN=SSL" \
+      -key /etc/stunnel/key.key -out /etc/stunnel/cert.crt
+  fi
 fi
-
-if [ ! -f /etc/stunnel/stunnel.crt ] || [ ! -f /etc/stunnel/stunnel.key ]; then
-  echo -e "  ${norm}[${yellow}+${norm}] Generating self-signed certificate..."
-  openssl ecparam -genkey -name prime256v1 -out /etc/stunnel/stunnel.key
-  openssl req -new -x509 -sha512 -nodes -days 3652 \
-    -subj "/C=FR/ST=SSL/L=SSL/O=SSL/CN=SSL" \
-    -key /etc/stunnel/stunnel.key -out /etc/stunnel/stunnel.crt
-fi
-
-chmod 640 /etc/stunnel/stunnel.crt
-chmod 640 /etc/stunnel/stunnel.key
 
 # Check configuration
 
@@ -142,8 +143,8 @@ renegotiation = no
 sslVersionMin = TLSv1.2
 sslVersionMax = TLSv1.3
 
-key=/etc/stunnel/stunnel.key
-cert=/etc/stunnel/stunnel.crt
+key=/etc/stunnel${key}
+cert=/etc/stunnel${cert}
 
 socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
