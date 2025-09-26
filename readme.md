@@ -29,7 +29,7 @@ services:
       CONNECT_PORT: "53"
       CONNECT_HOST: "1.1.1.1"
     volumes:
-      - ./privkey.pem:/key.pem
+      - ./privkey.pem:/private.pem
       - ./certificate.pem:/cert.pem
     ports:
       - 853:853
@@ -39,7 +39,7 @@ services:
 ##### Via Docker CLI:
 
 ```bash
-docker run -it --rm --name stunnel -p 853:853 -e "LISTEN_PORT=853" -e "CONNECT_PORT=53" -e "CONNECT_HOST=1.1.1.1" -v "${PWD:-.}/privkey.pem:/key.pem" -v "${PWD:-.}/certificate.pem:/cert.pem" dockurr/stunnel
+docker run -it --rm --name stunnel -p 853:853 -e "LISTEN_PORT=853" -e "CONNECT_PORT=53" -e "CONNECT_HOST=1.1.1.1" -v "${PWD:-.}/privkey.pem:/private.pem" -v "${PWD:-.}/certificate.pem:/cert.pem" dockurr/stunnel
 ```
 
 ## Configuration ⚙️
@@ -63,7 +63,7 @@ When running in server mode, a certificate is needed. By default, a self-signed 
 
 ```yaml
 volumes:
-  - ./privkey.pem:/key.pem
+  - ./privkey.pem:/private.pem
   - ./certificate.pem:/cert.pem
 ```
 
@@ -71,7 +71,7 @@ Instead of `.pem` files you can also use `.crt`/`.key` files:
 
 ```yaml
 volumes:
-  - ./privkey.key:/key.key
+  - ./privkey.key:/private.key
   - ./certificate.crt:/cert.crt
 ```
 
