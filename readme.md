@@ -44,6 +44,19 @@ docker run -it --rm --name stunnel -p 853:853 -e "LISTEN_PORT=853" -e "CONNECT_P
 
 ## Configuration ⚙️
 
+### How do I select the mode?
+
+stunnel can operate in two modes. The __server mode__ works as a transparent proxy in front of a server, so that clients that connect to the server, need to negotiate an SSL and can then talk to the server (like POP3S).
+
+The __client mode__ does the opposite thing. Clients connecting to stunnel running in client mode can establish a plain text connection and stunnel will create an SSL tunnel to a server.
+
+By default it will run in server mode, but to switch modes you can set the `CLIENT` variable like this:
+
+```yaml
+environment:
+  CLIENT: "yes"
+```
+
 ### How do I select the certificate?
 
 By default, a self-signed certificate will be generated, but you can supply your own `.pem` certificates by adding:
@@ -60,15 +73,6 @@ Instead of `.pem` files you can also use `.crt`/`.key` files:
 volumes:
   - ./privkey.key:/key.key
   - ./certificate.crt:/cert.crt
-```
-
-### How do I tunnel to a TLS port?
-
-By default, it is assumed that the destination port will not have TLS/SSL, but when it does you can set the `CLIENT` variable like this:
-
-```yaml
-environment:
-  CLIENT: "yes"
 ```
 
 ### How do I modify the permissions?
@@ -101,5 +105,6 @@ volumes:
 [Build]: https://github.com/dockur/stunnel/actions/workflows/build.yml/badge.svg
 [Size]: https://img.shields.io/docker/image-size/dockurr/stunnel/latest?color=066da5&label=size
 [Pulls]: https://img.shields.io/docker/pulls/dockurr/stunnel.svg?style=flat&label=pulls&logo=docker
-[Version]: https://img.shields.io/docker/v/dockurr/stunnel/latest?arch=amd64&sort=semver&color=066da5
+[Version]: https://img.shields.io/
+docker/v/dockurr/stunnel/latest?arch=amd64&sort=semver&color=066da5
 [Package]: https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fipitio.github.io%2Fbackage%2Fdockur%2Fstunnel%2Fstunnel.json&query=%24.downloads&logo=github&style=flat&color=066da5&label=pulls
