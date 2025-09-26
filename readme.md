@@ -39,7 +39,7 @@ services:
 ##### Via Docker CLI:
 
 ```bash
-docker run -it --rm --name stunnel -p 853:853 -e "LISTEN_PORT=853" -e "CONNECT_PORT=53" -e "CONNECT_HOST=10.0.0.1" -v "${PWD:-.}/privkey.pem:/key.pem" -v "${PWD:-.}/certificate.pem:/cert.pem" dockurr/stunnel
+docker run -it --rm --name stunnel -p 853:853 -e "LISTEN_PORT=853" -e "CONNECT_PORT=53" -e "CONNECT_HOST=1.1.1.1" -v "${PWD:-.}/privkey.pem:/key.pem" -v "${PWD:-.}/certificate.pem:/cert.pem" dockurr/stunnel
 ```
 
 ## Configuration ⚙️
