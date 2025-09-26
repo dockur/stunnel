@@ -8,7 +8,7 @@ services:
       CONNECT_PORT: "53"
       CONNECT_HOST: "1.1.1.1"
     volumes:
-      - ./privkey.pem:/key.pem
+      - ./privkey.pem:/private.pem
       - ./certificate.pem:/cert.pem
     ports:
       - 853:853
