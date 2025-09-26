@@ -59,7 +59,7 @@ environment:
 
 ### How do I select the certificate?
 
-By default, a self-signed certificate will be generated, but you can supply your own `.pem` certificates by adding:
+When running in server mode, a certificate is needed. By default, a self-signed certificate will be generated, but you can supply your own `.pem` certificates by adding:
 
 ```yaml
 volumes:
