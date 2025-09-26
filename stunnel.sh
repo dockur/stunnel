@@ -20,6 +20,8 @@ green="${cli}1;32m"
 
 # Variables
 TZ=${TZ:-UTC}
+PUID=${PUID:-1000}
+PGID=${PGID:-1000}
 CLIENT=${CLIENT:-no}
 LISTEN_HOST=${LISTEN_HOST:-0.0.0.0}
 LISTEN_PORT=${LISTEN_PORT:-853}
@@ -27,7 +29,7 @@ CONNECT_HOST=${CONNECT_HOST:-10.0.0.1}
 CONNECT_PORT=${CONNECT_PORT:-53}
 HEALTHCHECK=${HEALTHCHECK:-127.0.0.1}
 
-echo -e "\n${bold}Docker Stunnel${norm} ($LISTEN_HOST:$LISTEN_PORT => $CONNECT_HOST:$CONNECT_PORT)\n"
+echo -e "\n${bold}Starting Stunnel for Docker...${norm} ($LISTEN_HOST:$LISTEN_PORT => $CONNECT_HOST:$CONNECT_PORT)\n"
 
 # Timezone
 echo "  ${norm}[${green}+${norm}] Setting timezone to ${green}${TZ}${norm}"
