@@ -29,7 +29,8 @@ services:
       CONNECT_PORT: "53"
       CONNECT_HOST: "10.0.0.1"
     volumes:
-      - ./certificate.pem:/stunnel.pem
+      - ./privkey.pem:/key.pem
+      - ./certificate.pem:/cert.pem
     ports:
       - 853:853
     restart: always
@@ -38,21 +39,28 @@ services:
 ##### Via Docker CLI:
 
 ```bash
-docker run -it --rm --name stunnel -p 853:853 -e "LISTEN_PORT=853" -e "CONNECT_PORT=53" -e "CONNECT_HOST=10.0.0.1" -v "${PWD:-.}/certificate.pem:/stunnel.pem" dockurr/stunnel
+docker run -it --rm --name stunnel -p 853:853 -e "LISTEN_PORT=853" -e "CONNECT_PORT=53" -e "CONNECT_HOST=10.0.0.1" -v "${PWD:-.}/privkey.pem:/key.pem" -v "${PWD:-.}/certificate.pem:/cert.pem" dockurr/stunnel
 ```
 
 ## Configuration ⚙️
 
 ### How do I select the certificate?
 
-By default, a self-signed certificate will be generated, but you can supply your own certificate by adding:
+By default, a self-signed certificate will be generated, but you can supply your own `.pem` certificates by adding:
 
 ```yaml
 volumes:
-  - ./certificate.pem:/stunnel.pem
+  - ./privkey.pem:/key.pem
+  - ./certificate.pem:/cert.pem
 ```
 
-Replace the example filename `./certificate.pem` with the real filename of the certificate.
+Instead of `.pem` files you can also use `.crt`/`.key` files:
+
+```yaml
+volumes:
+  - ./privkey.key:/key.key
+  - ./certificate.crt:/cert.crt
+```
 
 ### How do I tunnel to a TLS port?
 
