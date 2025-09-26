@@ -28,7 +28,7 @@ services:
       CONNECT_PORT: "53"
       CONNECT_HOST: "10.0.0.1"
     volumes:
-      - ./certificate.pem:/etc/stunnel/stunnel.pem
+      - ./certificate.pem:/stunnel.pem
     ports:
       - 853:853
     restart: always
@@ -37,7 +37,7 @@ services:
 ##### Via Docker CLI:
 
 ```bash
-docker run -it --rm --name stunnel -p 853:853 -e "LISTEN_PORT=853" -e "CONNECT_PORT=53" -e "CONNECT_HOST=10.0.0.1" -v "${PWD:-.}/certificate.pem:/etc/stunnel/stunnel.pem" dockurr/stunnel
+docker run -it --rm --name stunnel -p 853:853 -e "LISTEN_PORT=853" -e "CONNECT_PORT=53" -e "CONNECT_HOST=10.0.0.1" -v "${PWD:-.}/certificate.pem:/stunnel.pem" dockurr/stunnel
 ```
 
 ## Configuration ⚙️
@@ -48,7 +48,7 @@ By default, a self-signed certificate will be generated, but you can supply your
 
 ```yaml
 volumes:
-  - ./certificate.pem:/etc/stunnel/stunnel.pem
+  - ./certificate.pem:/stunnel.pem
 ```
 
 Replace the example filename `./certificate.pem` with the real filename of the certificate.
@@ -78,7 +78,7 @@ If you need more advanced features, you can completely override the default conf
 
 ```yaml
 volumes:
-  - ./stunnel.conf:/etc/stunnel/stunnel.conf
+  - ./custom.conf:/stunnel.conf
 ```
 
 ## Stars 🌟
