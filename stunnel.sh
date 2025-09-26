@@ -37,22 +37,26 @@ echo "${TZ}" > /etc/timezone
 # Check certificate & key
 if [ -f /etc/stunnel/stunnel.pem ] && [ -s /etc/stunnel/stunnel.pem ]; then
   chmod 640 /etc/stunnel/stunnel.pem
-  keys="cert=/etc/stunnel/stunnel.pem"
-else
-  if [ ! -f /etc/stunnel/stunnel.crt ] || [ ! -f /etc/stunnel/stunnel.key ]; then
-    echo -e "  ${norm}[${yellow}+${norm}] Setting certificate & key (missing)"
-    openssl ecparam -genkey -name prime256v1 -out /etc/stunnel/stunnel.key
-    openssl req -new -x509 -sha512 -nodes -days 3652 \
+  rm -f  /etc/stunnel/stunnel.crt
+  rm -f  /etc/stunnel/stunnel.key
+  echo -e "  ${norm}[${yellow}+${norm}] Converting certificate format..."
+  openssl pkey -in  /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.key
+  openssl x509 -outform PEM -in  /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.crt
+fi
+
+if [ ! -f /etc/stunnel/stunnel.crt ] || [ ! -f /etc/stunnel/stunnel.key ]; then
+  echo -e "  ${norm}[${yellow}+${norm}] Generating self-signed certificate..."
+  openssl ecparam -genkey -name prime256v1 -out /etc/stunnel/stunnel.key
+  openssl req -new -x509 -sha512 -nodes -days 3652 \
     -subj "/C=FR/ST=SSL/L=SSL/O=SSL/CN=SSL" \
     -key /etc/stunnel/stunnel.key -out /etc/stunnel/stunnel.crt
-  fi
-  [ -f /etc/stunnel/stunnel.key ] && chmod 640 /etc/stunnel/stunnel.key
-  keys="cert=/etc/stunnel/stunnel.crt\nkey=/etc/stunnel/stunnel.key"
 fi
+
+chmod 640 /etc/stunnel/stunnel.key
 
 # Check configuration
 if [ ! -f /etc/stunnel/stunnel.conf ]; then
-	echo "  ${norm}[${green}+${norm}] Setting stunnel configuration.."
+	echo "  ${norm}[${green}+${norm}] Setting up stunnel configuration.."
 	cat > /etc/stunnel/stunnel.conf << EOF
 foreground = yes
 output = /var/log/stunnel.log
@@ -62,11 +66,12 @@ client = $CLIENT
 accept = $LISTEN_HOST:$LISTEN_PORT
 connect = $CONNECT_HOST:$CONNECT_PORT
 
-$keys
 delay = no
 renegotiation = no
 sslVersionMin = TLSv1.2
 sslVersionMax = TLSv1.3
+cert=/etc/stunnel/stunnel.crt
+key=/etc/stunnel/stunnel.key
 
 socket = l:TCP_NODELAY=1
 socket = r:TCP_NODELAY=1
