@@ -27,7 +27,7 @@ services:
     environment:
       LISTEN_PORT: "853"
       CONNECT_PORT: "53"
-      CONNECT_HOST: "10.0.0.1"
+      CONNECT_HOST: "1.1.1.1"
     volumes:
       - ./privkey.pem:/key.pem
       - ./certificate.pem:/cert.pem
