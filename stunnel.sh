@@ -36,7 +36,8 @@ echo "  ${norm}[${green}+${norm}] Setting timezone to ${green}${TZ}${norm}"
 ln -snf "/usr/share/zoneinfo/${TZ}" /etc/localtime
 echo "${TZ}" > /etc/timezone
 
-cert="/stunnel.pem"
+# Process certificates
+cert="/cert.pem"
 
 if [ -d "$cert" ]; then
 
@@ -45,15 +46,57 @@ if [ -d "$cert" ]; then
 
 fi
 
-# Check certificate & key
 if [ -f "$cert" ] && [ -s "$cert" ]; then
   cp "$cert" /etc/stunnel/stunnel.pem
   chmod 640 /etc/stunnel/stunnel.pem
   rm -f  /etc/stunnel/stunnel.crt
-  rm -f  /etc/stunnel/stunnel.key
-  openssl pkey -in  /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.key
   openssl x509 -outform PEM -in  /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.crt
   rm /etc/stunnel/stunnel.pem
+fi
+
+cert="/cert.crt"
+
+if [ -d "$cert" ]; then
+
+    echo "The bind $cert maps to a file that does not exist!"
+    exit 1
+
+fi
+
+if [ -f "$cert" ] && [ -s "$cert" ]; then
+  cp "$cert" /etc/stunnel/stunnel.crt
+  chmod 640 /etc/stunnel/stunnel.crt
+fi
+
+key="/key.pem"
+
+if [ -d "$key" ]; then
+
+    echo "The bind $key maps to a file that does not exist!"
+    exit 1
+
+fi
+
+if [ -f "$key" ] && [ -s "$key" ]; then
+  cp "$key" /etc/stunnel/stunnel.pem
+  chmod 640 /etc/stunnel/stunnel.pem
+  rm -f  /etc/stunnel/stunnel.key
+  openssl pkey -in  /etc/stunnel/stunnel.pem -out /etc/stunnel/stunnel.key
+  rm /etc/stunnel/stunnel.pem
+fi
+
+key="/key.key"
+
+if [ -d "$key" ]; then
+
+    echo "The bind $key maps to a file that does not exist!"
+    exit 1
+
+fi
+
+if [ -f "$key" ] && [ -s "$key" ]; then
+  cp "$key" /etc/stunnel/stunnel.key
+  chmod 640 /etc/stunnel/stunnel.key
 fi
 
 if [ ! -f /etc/stunnel/stunnel.crt ] || [ ! -f /etc/stunnel/stunnel.key ]; then
