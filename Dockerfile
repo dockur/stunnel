@@ -14,11 +14,9 @@ RUN set -eu && \
 COPY --chmod=755 stunnel.sh /usr/bin/stunnel.sh
 RUN ln -sf /dev/stdout /var/log/stunnel.log
 
-ENV TZ="UTC"
-ENV CLIENT: "no"
-ENV LISTEN_PORT: "853"
-ENV CONNECT_PORT: "53"
-ENV CONNECT_HOST: "1.1.1.1"
+ENV LISTEN_PORT="853"
+ENV CONNECT_PORT="53"
+ENV CONNECT_HOST="1.1.1.1"
       
 VOLUME [ "/etc/stunnel" ]
 
