@@ -46,9 +46,9 @@ docker run -it --rm --name stunnel -p 853:853 -e "LISTEN_PORT=853" -e "CONNECT_P
 
 ### How do I select the mode?
 
-stunnel can operate in two modes. The __server mode__ works as a transparent proxy in front of a server, so that clients that connect to the server, need to negotiate an SSL and can then talk to the server (like POP3S).
+Stunnel can operate in two modes. The __server mode__ works as a transparent proxy in front of a server, so that clients that connect negotiate an TLS connection while the traffic forwarded to the destination server stays unencrypted.
 
-The __client mode__ does the opposite thing. Clients connecting to stunnel running in client mode can establish a plain text connection and stunnel will create an SSL tunnel to a server.
+The __client mode__ does the opposite thing. Clients connecting to stunnel running in client mode can establish a plain text connection and stunnel will create an encrypted TLS tunnel to the destination server.
 
 By default it will run in server mode, but to switch modes you can set the `CLIENT` variable like this:
 
