@@ -97,4 +97,4 @@ EOF
 chmod +x /usr/local/bin/healthcheck
 
 # Init
-su -s /usr/bin/stunnel stunnel
+exec /usr/bin/stunnel
