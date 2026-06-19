@@ -28,7 +28,7 @@ CONNECT_HOST=${CONNECT_HOST:-10.0.0.1}
 CONNECT_PORT=${CONNECT_PORT:-53}
 HEALTHCHECK=${HEALTHCHECK:-127.0.0.1}
 
-if [ -f /proc/net/if_inet6 ]; then
+if [ -f /proc/net/if_inet6 ] && [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6 2>/dev/null)" != "1" ]]; then
   LISTEN_HOST=${LISTEN_HOST:-::}
 else
   LISTEN_HOST=${LISTEN_HOST:-0.0.0.0}
