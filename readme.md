@@ -95,7 +95,7 @@ volumes:
 ```
 
 ## Stars 🌟
-[![Stars](https://starchart.cc/dockur/stunnel.svg?variant=adaptive)](https://starchart.cc/dockur/stunnel)
+[![Stargazers](https://raw.githubusercontent.com/star-stats/stars/refs/heads/data/charts/dockur-stunnel.svg)](https://github.com/dockur/stunnel/stargazers)
 
 [build_url]: https://github.com/dockur/stunnel
 [hub_url]: https://hub.docker.com/r/dockurr/stunnel
