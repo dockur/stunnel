@@ -16,7 +16,7 @@ Docker container of [stunnel](https://www.stunnel.org/), a proxy designed to add
 
 ## Usage  🐳
 
-##### Via Docker Compose:
+##### Docker Compose:
 
 ```yaml
 services:
@@ -36,7 +36,7 @@ services:
     restart: always
 ```
 
-##### Via Docker CLI:
+##### Docker CLI:
 
 ```bash
 docker run -it --rm --name stunnel -p 853:853 -e "LISTEN_PORT=853" -e "CONNECT_PORT=53" -e "CONNECT_HOST=1.1.1.1" -v "${PWD:-.}/privkey.pem:/private.pem" -v "${PWD:-.}/certificate.pem:/cert.pem" docker.io/dockurr/stunnel
