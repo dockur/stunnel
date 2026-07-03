@@ -132,7 +132,9 @@ fi
 
 # Fix permissions
 echo -e "  ${norm}[${green}+${norm}] Fixing permissions..${norm}\n"
-chown "${PUID}:${PGID}" /proc/self/fd/1 /proc/self/fd/2
+
+# Do not fail startup if stdout/stderr cannot be chowned.
+chown "${PUID}:${PGID}" /proc/self/fd/1 /proc/self/fd/2 2>/dev/null || :
 chown -R "${PUID}:${PGID}" /etc/stunnel /var/log/stunnel.log
 
 if [ -n "${PGID}" ] && [ -n "${PUID}" ]; then
