@@ -147,7 +147,7 @@ fi
 cat > /usr/local/bin/healthcheck << EOF
 #!/usr/bin/env sh
 set -e
-nc -w 1 -z $HEALTHCHECK $LISTEN_PORT
+nc -w 1 -z "$HEALTHCHECK" "$LISTEN_PORT"
 EOF
 chmod +x /usr/local/bin/healthcheck
 
