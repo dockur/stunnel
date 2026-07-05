@@ -1,6 +1,6 @@
 <h1 align="center">stunnel<br />
 <div align="center">
-<a href="https://github.com/dockur/stunnel"><img src="https://raw.githubusercontent.com/dockur/stunnel/master/.github/logo.png" title="Logo" style="max-width:100%;" width="128" /></a>
+<a href="https://github.com/dockur/stunnel"><img src="https://raw.githubusercontent.com/dockur/stunnel/master/.github/logo.png" title="Logo" style="max-width:100%;" width="96" /></a>
 </div>
 <div align="center">
 
