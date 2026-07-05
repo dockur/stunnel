@@ -1,6 +1,5 @@
 services:
   stunnel:
-    hostname: stunnel
     image: dockurr/stunnel
     container_name: stunnel
     environment:
