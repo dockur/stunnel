@@ -21,7 +21,6 @@ Docker container of [stunnel](https://www.stunnel.org/), a proxy designed to add
 ```yaml
 services:
   stunnel:
-    hostname: stunnel
     image: dockurr/stunnel
     container_name: stunnel
     environment:
