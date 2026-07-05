@@ -19,7 +19,8 @@ RUN <<EOF
   rm -rf /tmp/* /var/cache/apk/*
 EOF
 
-COPY --chmod=755 stunnel.sh /usr/bin/stunnel.sh
+COPY --chmod=755 entrypoint.sh /usr/bin/entrypoint.sh
+
 RUN ln -sf /dev/stdout /var/log/stunnel.log
 
 ENV LISTEN_PORT="853"
@@ -30,4 +31,4 @@ VOLUME [ "/etc/stunnel" ]
 
 HEALTHCHECK --interval=10s --timeout=5s --start-period=5s CMD /usr/local/bin/healthcheck
 
-ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/stunnel.sh"]
+ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/entrypoint.sh"]
