@@ -14,6 +14,16 @@
 
 Docker container of [stunnel](https://www.stunnel.org/), a proxy designed to add TLS encryption functionality to existing clients and servers without any changes in the programs' code.
 
+## Features ✨
+
+- Adds TLS encryption to existing network services
+- Supports both client and server mode
+- Configurable listen and target endpoints
+- Supports custom certificates and private keys
+- Can generate a self-signed certificate automatically
+- Allows custom `stunnel.conf` configuration
+- Lightweight Alpine-based image
+
 ## Usage  🐳
 
 ##### Docker Compose:
