@@ -34,6 +34,8 @@ detectListenHost() {
   else
     LISTEN_HOST=${LISTEN_HOST:-0.0.0.0}
   fi
+
+  return 0
 }
 
 configureTimezone() {
@@ -50,6 +52,8 @@ checkBindIsFile() {
     echo "The bind $path maps to a file that does not exist!"
     exit 1
   fi
+
+  return 0
 }
 
 selectCertificateFile() {
@@ -62,6 +66,8 @@ selectCertificateFile() {
     checkBindIsFile "$cert"
 
   fi
+
+  return 0
 }
 
 selectPrivateKeyFile() {
@@ -74,6 +80,8 @@ selectPrivateKeyFile() {
     checkBindIsFile "$key"
 
   fi
+
+  return 0
 }
 
 generateCertificate() {
@@ -95,6 +103,8 @@ processCertificates() {
   if [ ! -f "$cert" ] || [ ! -s "$cert" ] || [ ! -f "$key" ] || [ ! -s "$key" ]; then
     generateCertificate
   fi
+
+  return 0
 }
 
 writeDefaultConfig() {
@@ -138,6 +148,8 @@ configureStunnel() {
   else
     writeDefaultConfig
   fi
+
+  return 0
 }
 
 fixPermissions() {
@@ -153,6 +165,8 @@ fixPermissions() {
     sed -i -e "s/^stunnel:\([^:]*\):\([0-9]*\):[0-9]*/stunnel:\1:\2:${PGID}/" /etc/passwd
     sed -i -e "s/^stunnel:\([^:]*\):[0-9]*:\([0-9]*\)/stunnel:\1:${PUID}:\2/" /etc/passwd
   fi
+
+  return 0
 }
 
 writeHealthcheck() {
@@ -163,6 +177,8 @@ set -e
 nc -w 1 -z "$HEALTHCHECK" "$LISTEN_PORT"
 EOF
   chmod +x /usr/local/bin/healthcheck
+
+  return 0
 }
 
 detectListenHost
