@@ -29,6 +29,6 @@ ENV CONNECT_HOST="1.1.1.1"
 
 VOLUME [ "/etc/stunnel" ]
 
-HEALTHCHECK --interval=10s --timeout=5s --start-period=5s CMD /usr/local/bin/healthcheck
+HEALTHCHECK --interval=10s --timeout=5s --start-period=5s CMD ["/usr/local/bin/healthcheck"]
 
 ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/entrypoint.sh"]
